@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creatore di Flashcards Studio - IE11</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #fcfcfc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #d13438; /* Rosso mattone scuro */
+            color: white;
+            padding: 20px;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #e1dfdd;
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #d13438;
+            border-bottom: 2px solid #d13438;
+            padding-bottom: 5px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"] {
+            width: 95%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #a19f9d;
+            font-size: 14px;
+        }
+        button {
+            background-color: #d13438;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #a8282b;
+        }
+        /* Stile scatola Flashcard interattiva compatibile IE11 */
+        .flashcard-box {
+            background-color: #fff2f2;
+            border: 2px solid #d13438;
+            border-radius: 4px;
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            min-height: 60px;
+        }
+        .info-card {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Creatore di Flashcards per lo Studio</h1>
+        <p>Crea le tue carte per memorizzare concetti e materie scolastiche (Compatibile IE11)</p>
+    </div>
+
+    <!-- CREAZIONE -->
+    <div class="card">
+        <h2>📝 Aggiungi Nuova Scheda</h2>
+        
+        <label for="fronte">Fronte della carta (Domanda o Termine):</label>
+        <input type="text" id="fronte" placeholder="Es. Capitale della Francia? oppure DNA significato...">
+
+        <label for="retro">Retro della carta (Risposta o Spiegazione):</label>
+        <input type="text" id="retro" placeholder="Es. Parigi oppure Acido Desossiribonucleico...">
+
+        <button id="btnAggiungi">Aggiungi Scheda</button>
+    </div>
+
+    <!-- VISUALIZZAZIONE & GIOCO -->
+    <div class="card">
+        <h2>🧠 Ripassa le tue Schede</h2>
+        <p>Clicca sul rettangolo per girare la carta e vedere la risposta.</p>
+        
+        <div class="flashcard-box" id="scatolaFlashcard">
+            Nessuna scheda inserita. Aggiungine una sopra!
+        </div>
+        <div class="info-card" id="infoStatoSchede">Scheda 0 di 0</div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <button id="btnPrecedente" style="background-color: #71afe5;">← Precedente</button>
+            <button id="btnSuccessiva" style="background-color: #71afe5;">Successiva →</button>
+        </div>
+
+        <div style="margin-top: 25px; border-top: 1px solid #edebe9; padding-top: 15px;">
+            <button id="btnScarica" style="background-color: #107c41;">💾 Scarica Schede sul PC (.txt)</button>
+            <button id="btnSvuota" style="background-color: #a80000;">Svuota Tutto</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Array volatile per le schede di studio
+    var schede = [];
+    var indiceCorrente = 0;
+    var visualizzaFronte = true; // Stato della carta (fronte o retro)
+
+    var fronteInput = document.getElementById("fronte");
+    var retroInput = document.getElementById("retro");
+    var scatolaFlashcard = document.getElementById("scatolaFlashcard");
+    var infoStatoSchede = document.getElementById("infoStatoSchede");
+
+    // Mostra la scheda corrente
+    function mostraScheda() {
+        if (schede.length === 0) {
+            scatolaFlashcard.innerHTML = "Nessuna scheda inserita. Aggiungine una sopra!";
+            scatolaFlashcard.style.backgroundColor = "#f3f2f1";
+            infoStatoSchede.innerHTML = "Scheda 0 di 0";
+            return;
+        }
+
+        var schedaAttuale = schede[indiceCorrente];
+        if (visualizzaFronte) {
+            scatolaFlashcard.innerHTML = "[DOMANDA] <br><br>" + schedaAttuale.fronte;
+            scatolaFlashcard.style.backgroundColor = "#fff2f2";
+        } else {
+            scatolaFlashcard.innerHTML = "[RISPOSTA] <br><br>" + schedaAttuale.retro;
+            scatolaFlashcard.style.backgroundColor = "#dff6dd"; // Sfondo verde quando indovini
+        }
+
+        infoStatoSchede.innerHTML = "Scheda " + (indiceCorrente + 1) + " di " + schede.length;
+    }
+
+    // Gira la carta al clic
+    scatolaFlashcard.addEventListener("click", function() {
+        if (schede.length > 0) {
+            visualizzaFronte = !visualizzaFronte;
+            mostraScheda();
+        }
+    });
+
+    // Aggiungi nuova carta
+    document.getElementById("btnAggiungi").addEventListener("click", function() {
+        var fTxt = fronteInput.value.trim();
+        var rTxt = retroInput.value.trim();
+
+        if (fTxt === "" || rTxt === "") {
+            alert("Compila sia il fronte che il retro della scheda.");
+            return;
+        }
+
+        schede.push({ fronte: fTxt, retro: rTxt });
+        fronteInput.value = "";
+        retroInput.value = "";
+        
+        // Se è la prima scheda, posizionati lì
+        if (schede.length === 1) {
+            indiceCorrente = 0;
+        }
+        visualizzaFronte = true;
+        mostraScheda();
+    });
+
+    // Navigazione: Precedente
+    document.getElementById("btnPrecedente").addEventListener("click", function() {
+        if (schede.length > 0) {
+            indiceCorrente--;
+            if (indiceCorrente < 0) {
+                indiceCorrente = schede.length - 1; // Torna all'ultima
+            }
+            visualizzaFronte = true;
+            mostraScheda();
+        }
+    });
+
+    // Navigazione: Successiva
+    document.getElementById("btnSuccessiva").addEventListener("click", function() {
+        if (schede.length > 0) {
+            indiceCorrente++;
+            if (indiceCorrente >= schede.length) {
+                indiceCorrente = 0; // Ricomincia dalla prima
+            }
+            visualizzaFronte = true;
+            mostraScheda();
+        }
+    });
+
+    // Svuota tutto il set
+    document.getElementById("btnSvuota").addEventListener("click", function() {
+        schede = [];
+        indiceCorrente = 0;
+        visualizzaFronte = true;
+        mostraScheda();
+    });
+
+    // Esporta file TXT delle schede (Compatibile IE11)
+    document.getElementById("btnScarica").addEventListener("click", function() {
+        if (schede.length === 0) {
+            alert("Non ci sono schede da scaricare!");
+            return;
+        }
+
+        var contenutoTxt = "LE MIE SCHEDE DI STUDIO\r\n";
+        contenutoTxt += "========================================\r\n\r\n";
+
+        for (var i = 0; i < schede.length; i++) {
+            contenutoTxt += "SCHEDA " + (i + 1) + "\r\n";
+            contenutoTxt += "DOMANDA: " + schede[i].fronte + "\r\n";
+            contenutoTxt += "RISPOSTA: " + schede[i].retro + "\r\n";
+            contenutoTxt += "----------------------------------------\r\n";
+        }
+
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            var blob = new Blob([contenutoTxt], { type: "text/plain;charset=utf-8;" });
+            window.navigator.msSaveOrOpenBlob(blob, "schede-studio.txt");
+        } else {
+            var elementoAncorato = document.createElement("a");
+            elementoAncorato.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(contenutoTxt));
+            elementoAncorato.setAttribute("download", "schede-studio.txt");
+            elementoAncorato.style.display = "none";
+            document.body.appendChild(elementoAncorato);
+            elementoAncorato.click();
+            document.body.removeChild(elementoAncorato);
+        }
+    });
+
+    // Inizializzazione iniziale
+    mostraScheda();
+</script>
+
+</body>
+</html>
